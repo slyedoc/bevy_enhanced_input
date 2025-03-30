@@ -72,7 +72,7 @@ fn spawn(mut commands: Commands) {
 }
 
 fn binding(trigger: Trigger<Binding<Player>>, mut players: Query<&mut Actions<Player>>) {
-    let mut actions = players.get_mut(trigger.entity()).unwrap();
+    let mut actions = players.get_mut(trigger.target()).unwrap();
     actions
         .bind::<Move>()
         .to(Cardinal::wasd_keys())
@@ -95,13 +95,13 @@ fn draw_egui(mut text_edit: Local<String>, mut contexts: EguiContexts) {
 }
 
 fn apply_movement(trigger: Trigger<Fired<Move>>, mut players: Query<&mut Transform>) {
-    let mut transform = players.get_mut(trigger.entity()).unwrap();
+    let mut transform = players.get_mut(trigger.target()).unwrap();
     transform.translation += trigger.value.extend(0.0);
 }
 
 fn zoom(trigger: Trigger<Fired<Zoom>>, mut players: Query<&mut Transform>) {
     // Scale entity to fake zoom.
-    let mut transform = players.get_mut(trigger.entity()).unwrap();
+    let mut transform = players.get_mut(trigger.target()).unwrap();
     transform.scale += Vec3::splat(trigger.value);
 }
 

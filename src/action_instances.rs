@@ -43,7 +43,7 @@ pub trait ActionsMarkerAppExt {
     ///     settings: Res<AppSettings>,
     ///     mut players: Query<&mut Actions<Player>>,
     /// ) {
-    ///     let mut actions = players.get_mut(trigger.entity()).unwrap();
+    ///     let mut actions = players.get_mut(trigger.target()).unwrap();
     ///     actions
     ///         .bind::<Jump>()
     ///         .to((settings.keyboard.jump, GamepadButton::South));
@@ -95,7 +95,7 @@ fn add_context<M: ActionsMarker>(
     mut commands: Commands,
     mut instances: ResMut<ActionInstances>,
 ) {
-    instances.add::<M>(&mut commands, trigger.entity());
+    instances.add::<M>(&mut commands, trigger.target());
 }
 
 fn remove_context<M: ActionsMarker>(
@@ -111,7 +111,7 @@ fn remove_context<M: ActionsMarker>(
         &mut reset_input,
         &time,
         &mut actions,
-        trigger.entity(),
+        trigger.target(),
     );
 }
 

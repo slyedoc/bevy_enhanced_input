@@ -22,11 +22,13 @@ fn removal() {
         .press(DummyAction::KEY);
 
     app.world_mut()
-        .add_observer(|_: Trigger<Fired<DummyAction>>| {
-            panic!("action shouldn't trigger");
-        });
+        .add_observer(panic_observer);
 
     app.update();
+}
+
+fn panic_observer(_trigger: Trigger<Fired<DummyAction>>) {
+    panic!("action shouldn't trigger");
 }
 
 #[test]
@@ -84,7 +86,7 @@ fn rebuild_all() {
 }
 
 fn binding(trigger: Trigger<Binding<Dummy>>, mut actions: Query<&mut Actions<Dummy>>) {
-    let mut actions = actions.get_mut(trigger.entity()).unwrap();
+    let mut actions = actions.get_mut(trigger.target()).unwrap();
     actions.bind::<DummyAction>().to(DummyAction::KEY);
 }
 

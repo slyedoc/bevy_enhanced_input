@@ -7,8 +7,8 @@ use core::{
 };
 
 use bevy::{
+    platform_support::collections::{HashMap, hash_map::Entry},
     prelude::*,
-    utils::{Entry, HashMap},
 };
 
 use super::{
