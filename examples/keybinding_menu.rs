@@ -340,12 +340,12 @@ fn bind(
         button.input = Some(input);
     }
 
-    commands.entity(dialog_entity).despawn_recursive();
+    commands.entity(dialog_entity).despawn();
 }
 
 fn cancel_binding(mut commands: Commands, dialog_entity: Single<Entity, With<BindingDialog>>) {
     info!("cancelling binding");
-    commands.entity(*dialog_entity).despawn_recursive();
+    commands.entity(*dialog_entity).despawn();
 }
 
 fn replace_binding(

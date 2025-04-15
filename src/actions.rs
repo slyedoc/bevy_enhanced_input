@@ -6,8 +6,8 @@ use core::{
     marker::PhantomData,
 };
 
-use bevy::{
-    platform_support::collections::{HashMap, hash_map::Entry},
+use bevy::{    
+    platform::collections::{HashMap, hash_map::Entry},
     prelude::*,
 };
 

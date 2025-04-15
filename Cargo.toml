@@ -27,6 +27,7 @@ bevy = { version = "0.16.0-rc", default-features = false, features = [
   "bevy_window",
   "bevy_picking",
   "default_font",
+  "std",
   "x11",
 ] }
 ron = "0.9"

@@ -5,7 +5,7 @@ use bevy::{
     ecs::system::SystemParam,
     input::mouse::{AccumulatedMouseMotion, AccumulatedMouseScroll},
     prelude::*,
-    platform_support::collections::HashSet,
+    platform::collections::HashSet,
 };
 #[cfg(feature = "egui_priority")]
 use bevy_egui::EguiContext;
