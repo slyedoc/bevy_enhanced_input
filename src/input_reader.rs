@@ -5,7 +5,7 @@ use bevy::{
     ecs::system::SystemParam,
     input::mouse::{AccumulatedMouseMotion, AccumulatedMouseScroll},
     prelude::*,
-    utils::HashSet,
+    platform::collections::HashSet,
 };
 
 use crate::{
