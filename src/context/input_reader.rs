@@ -123,7 +123,10 @@ impl InputReader<'_, '_> {
                         // Get a scroll amount proportional to the kind of input that generated it.
                         match s.unit {
                             MouseScrollUnit::Line => s.delta,
-                            MouseScrollUnit::Pixel => s.delta / MouseScrollUnit::SCROLL_UNIT_CONVERSION_FACTOR,
+                            // `MouseScrollUnit::SCROLL_UNIT_CONVERSION_FACTOR` (= 100.0) was
+                            // added in the bevy 0.19 release; the solari fork this branch
+                            // targets predates it, so inline the value.
+                            MouseScrollUnit::Pixel => s.delta / 100.0,
                         }
                     )
                     .unwrap_or_default()
