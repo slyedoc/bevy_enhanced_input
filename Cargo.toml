@@ -47,6 +47,7 @@ bevy = { git = "https://github.com/bevyengine/bevy", branch = "main", default-fe
   "bevy_pbr",
   "bevy_state",
   "bevy_ui_render",
+  "bevy_ui_widgets",
   "bevy_window",
   "default_font",
   "debug",

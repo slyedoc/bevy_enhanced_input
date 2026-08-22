@@ -14,8 +14,10 @@ use bevy::{
     },
     input::{ButtonState, common_conditions::*, keyboard::KeyboardInput, mouse::MouseButtonInput},
     log::LogPlugin,
+    picking::hover::Hovered,
     prelude::*,
-    ui::FocusPolicy,
+    ui::{FocusPolicy, Pressed},
+    ui_widgets::Button,
 };
 use bevy_enhanced_input::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -205,7 +207,7 @@ fn action_row(
 }
 
 fn delete_binding(
-    click: On<Pointer<Click>>,
+    click: On<PointerClick>,
     mut binding_buttons: Query<(&Name, &mut BindingButton)>,
     delete_buttons: Query<&DeleteButton>,
 ) {
@@ -218,7 +220,7 @@ fn delete_binding(
 }
 
 fn show_binding_dialog(
-    click: On<Pointer<Click>>,
+    click: On<PointerClick>,
     mut commands: Commands,
     root_entity: Single<Entity, (With<Node>, Without<ChildOf>)>,
     names: Query<&Name>,
@@ -334,7 +336,7 @@ fn cancel_binding(mut commands: Commands, dialog: Single<Entity, With<BindingDia
 }
 
 fn replace_binding(
-    _on: On<Pointer<Click>>,
+    _on: On<PointerClick>,
     mut commands: Commands,
     dialog: Single<(Entity, &ConflictDialog)>,
     mut buttons: Query<(&Name, &mut BindingButton)>,
@@ -356,7 +358,7 @@ fn replace_binding(
 }
 
 fn cancel_replace_binding(
-    _on: On<Pointer<Click>>,
+    _on: On<PointerClick>,
     mut commands: Commands,
     dialog: Single<Entity, With<ConflictDialog>>,
 ) {
@@ -365,7 +367,7 @@ fn cancel_replace_binding(
 }
 
 fn apply(
-    _on: On<Pointer<Click>>,
+    _on: On<PointerClick>,
     mut commands: Commands,
     mut settings: ResMut<InputSettings>,
     buttons: Query<(&BindingButton, &BindingInfo)>,
@@ -392,7 +394,7 @@ fn update_button_text(
     mut text: Query<&mut Text>,
 ) {
     for (button, children) in &buttons {
-        let mut iter = text.iter_many_mut(children);
+        let mut iter = text.iter_many_mut(children).matched();
         let mut text = iter.fetch_next().unwrap();
         text.clear();
         write!(text, "{}", button.binding).unwrap();
@@ -400,13 +402,13 @@ fn update_button_text(
 }
 
 fn update_button_background(
-    mut buttons: Query<(&Interaction, &mut BackgroundColor), (Changed<Interaction>, With<Button>)>,
+    mut buttons: Query<(&Hovered, Has<Pressed>, &mut BackgroundColor), With<Button>>,
 ) {
-    for (&interaction, mut background) in &mut buttons {
-        *background = match interaction {
-            Interaction::Pressed => Color::srgb(0.35, 0.75, 0.35).into(),
-            Interaction::Hovered => Color::srgb(0.25, 0.25, 0.25).into(),
-            Interaction::None => Color::srgb(0.15, 0.15, 0.15).into(),
+    for (hovered, pressed, mut background) in &mut buttons {
+        *background = match (hovered.get(), pressed) {
+            (_, true) => Color::srgb(0.35, 0.75, 0.35).into(),
+            (true, false) => Color::srgb(0.25, 0.25, 0.25).into(),
+            (false, false) => Color::srgb(0.15, 0.15, 0.15).into(),
         };
     }
 }
@@ -426,6 +428,7 @@ fn reload_bindings(
 #[derive(Component, Default)]
 #[require(
     Button,
+    Hovered,
     Node {
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
@@ -448,6 +451,7 @@ struct BindingButton {
 #[derive(Component)]
 #[require(
     Button,
+    Hovered,
     Node {
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
