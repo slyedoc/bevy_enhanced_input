@@ -8,7 +8,7 @@ use bevy::{
     input::mouse::{AccumulatedMouseMotion, AccumulatedMouseScroll, MouseScrollUnit},
     platform::collections::HashSet,
     prelude::*,
-    utils::TypeIdMap,
+    utils::TypeIdHashMap,
 };
 use log::{debug, trace};
 
@@ -365,7 +365,7 @@ impl Default for ActionSources {
 /// to correctly handle inputs it consumes itself, while still treating inputs consumed in
 /// [`PreUpdate`] as already consumed for all runs within the same frame.
 #[derive(Resource, Default, Deref, DerefMut)]
-pub(crate) struct ConsumedInputs(TypeIdMap<IgnoredInputs>);
+pub(crate) struct ConsumedInputs(TypeIdHashMap<IgnoredInputs>);
 
 /// Bindings from actions with [`ActionSettings::require_reset`] enabled that were removed.
 ///

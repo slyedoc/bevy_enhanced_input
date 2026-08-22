@@ -314,7 +314,7 @@ impl ScheduleContexts {
 }
 
 fn register<C: Component, S: ScheduleLabel>(
-    insert: On<Insert, ContextPriority<C>>,
+    insert: On<Insert<ContextPriority<C>>>,
     mut instances: ResMut<ContextInstances<S>>,
     contexts: Query<&ContextPriority<C>, Allow<Disabled>>,
 ) {
@@ -329,7 +329,7 @@ fn register<C: Component, S: ScheduleLabel>(
 }
 
 fn unregister<C: Component, S: ScheduleLabel>(
-    discard: On<Discard, ContextPriority<C>>,
+    discard: On<Discard<ContextPriority<C>>>,
     mut instances: ResMut<ContextInstances<S>>,
 ) {
     debug!(
@@ -341,7 +341,7 @@ fn unregister<C: Component, S: ScheduleLabel>(
 }
 
 fn deactivate<C: Component>(
-    insert: On<Insert, ContextActivity<C>>,
+    insert: On<Insert<ContextActivity<C>>>,
     mut pending: ResMut<PendingBindings>,
     contexts: Query<(&ContextActivity<C>, &Actions<C>)>,
     actions: Query<(&ActionSettings, &Bindings)>,
@@ -358,9 +358,9 @@ fn deactivate<C: Component>(
     );
 
     if !*active {
-        for (settings, action_bindings) in actions.iter_many(context_actions) {
+        for (settings, action_bindings) in actions.iter_many(context_actions).matched() {
             if settings.require_reset {
-                pending.extend(bindings.iter_many(action_bindings).copied());
+                pending.extend(bindings.iter_many(action_bindings).matched().copied());
             }
         }
     }
@@ -368,7 +368,7 @@ fn deactivate<C: Component>(
 
 /// Resets action data and triggers corresponding events on removal.
 pub(crate) fn reset_action<C: Component>(
-    remove: On<Remove, ActionOf<C>>,
+    remove: On<Remove<ActionOf<C>>>,
     mut commands: Commands,
     mut pending: ResMut<PendingBindings>,
     mut actions: Query<(
@@ -408,7 +408,7 @@ pub(crate) fn reset_action<C: Component>(
     if let Some(action_bindings) = action_bindings
         && settings.require_reset
     {
-        pending.extend(bindings.iter_many(action_bindings).copied());
+        pending.extend(bindings.iter_many(action_bindings).matched().copied());
     }
 }
 
@@ -481,7 +481,7 @@ fn update<S: ScheduleLabel>(
             };
 
             let value = bindings
-                .iter_many(action_bindings.into_iter().flatten())
+                .iter_many(action_bindings.into_iter().flatten()).matched()
                 .map(|(_, b, ..)| b.mod_keys_count())
                 .max()
                 .unwrap_or(0);
@@ -496,7 +496,7 @@ fn update<S: ScheduleLabel>(
 
         reader.set_gamepad(gamepad);
 
-        let mut actions_iter = actions.iter_many_mut(&*context_actions);
+        let mut actions_iter = actions.iter_many_mut(&*context_actions).matched();
         while let Some((
             action,
             action_name,
@@ -541,7 +541,7 @@ fn update<S: ScheduleLabel>(
                 let actions_data = actions_data.as_readonly();
                 let mut tracker = TriggerTracker::new(ActionValue::zero(dim));
                 let mut bindings_iter =
-                    bindings.iter_many_mut(action_bindings.into_iter().flatten());
+                    bindings.iter_many_mut(action_bindings.into_iter().flatten()).matched();
                 while let Some((
                     binding_entity,
                     &binding,
@@ -686,7 +686,7 @@ fn apply<S: ScheduleLabel>(
             instance.entity(),
         );
 
-        let mut actions_iter = actions.iter_many_mut(context_actions);
+        let mut actions_iter = actions.iter_many_mut(context_actions).matched();
         while let Some(mut action) = actions_iter.fetch_next() {
             let fns = *action.get::<ActionFns>().unwrap();
             let value = *action.get::<ActionValue>().unwrap();
