@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Chord::blocking` to use a chord as a held modifier on a binding: a `ConditionKind::Blocker` that lets the input through only while all chorded actions fire, so a button alone or the modifier alone is `TriggerState::None` instead of `TriggerState::Ongoing`.
+
 ## [0.26.0] - 2026-06-20
 
 ### Changed

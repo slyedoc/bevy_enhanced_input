@@ -13,6 +13,15 @@ Set of actions that need to be triggered at the same time.
 
 Useful for defining a composite action that fires only when all listed actions fire.
 
+With [`Self::blocking`] the chord is a held modifier instead: a [`ConditionKind::Blocker`] that
+lets its binding (or action) through only while every listed action fires and contributes nothing
+of its own, so the state is the input's (and its other conditions'). Put it on a binding to give a
+button a second job under a modifier (a controller has no [`ModKeys`]): the button alone and the
+modifier alone are both [`TriggerState::None`]. An implicit chord cannot say that: it does not
+read the input, so on its own it fires on the modifier alone, and beside [`Down`] either part
+alone is [`TriggerState::Ongoing`], which starts the action. Pair the button's plain binding with
+[`BlockBy`] on the modifier, so it stands down while the modifier is held.
+
 Requires using [`SpawnRelated::spawn`] or separate spawning with [`ActionOf`]/[`BindingOf`]
 because you need to pass [`Entity`] for step and cancel actions.
 
@@ -69,8 +78,14 @@ pub struct Chord {
     ///
     /// When disabled, partial activation results in [`TriggerState::None`].
     ///
-    /// Defaults to `true`.
+    /// Defaults to `true`. Ignored when [`Self::blocking`] is set.
     pub ongoing: bool,
+    /// Makes the chord a [`ConditionKind::Blocker`]: [`TriggerState::None`] (blocking the
+    /// binding or action it is on) until all chorded actions fire, otherwise
+    /// [`TriggerState::Fired`], which leaves the state to the input and the other conditions.
+    ///
+    /// Defaults to `false`.
+    pub blocking: bool,
 }
 
 impl Chord {
@@ -86,6 +101,7 @@ impl Chord {
         Self {
             actions: actions.into(),
             ongoing: true,
+            blocking: false,
         }
     }
 
@@ -93,6 +109,13 @@ impl Chord {
     #[must_use]
     pub fn with_ongoing(mut self, enable: bool) -> Self {
         self.ongoing = enable;
+        self
+    }
+
+    /// Sets [`Self::blocking`].
+    #[must_use]
+    pub fn with_blocking(mut self, enable: bool) -> Self {
+        self.blocking = enable;
         self
     }
 }
@@ -124,7 +147,7 @@ impl InputCondition for Chord {
 
         if has_active && all_fired {
             TriggerState::Fired
-        } else if has_active && self.ongoing {
+        } else if has_active && self.ongoing && !self.blocking {
             TriggerState::Ongoing
         } else {
             TriggerState::None
@@ -132,7 +155,11 @@ impl InputCondition for Chord {
     }
 
     fn kind(&self) -> ConditionKind {
-        ConditionKind::Implicit
+        if self.blocking {
+            ConditionKind::Blocker
+        } else {
+            ConditionKind::Implicit
+        }
     }
 }
 
@@ -209,6 +236,30 @@ mod tests {
         assert_eq!(
             condition.evaluate(&actions, &time, true.into()),
             TriggerState::None,
+        );
+    }
+
+    #[test]
+    fn blocking() {
+        let (mut world, mut state) = context::init_world();
+        let action1 = world
+            .spawn((Action::<Test>::new(), TriggerState::Fired))
+            .id();
+        let action2 = world
+            .spawn((Action::<Test>::new(), TriggerState::None))
+            .id();
+        let (time, actions) = state.get(&world).unwrap();
+        let mut partial = Chord::new([action1, action2]).with_blocking(true);
+        assert!(matches!(partial.kind(), ConditionKind::Blocker));
+        assert_eq!(
+            partial.evaluate(&actions, &time, true.into()),
+            TriggerState::None,
+            "a partial chord blocks instead of going ongoing"
+        );
+        let mut full = Chord::single(action1).with_blocking(true);
+        assert_eq!(
+            full.evaluate(&actions, &time, true.into()),
+            TriggerState::Fired,
         );
     }
 
