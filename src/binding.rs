@@ -278,9 +278,10 @@ fn on_insert(mut world: DeferredWorld, ctx: HookContext) {
 /// Used to prevent newly created contexts from reacting to currently active inputs
 /// until they're released.
 ///
-/// Used only if [`ActionSettings::require_reset`] is set.
+/// Used only if [`ActionSettings::require_reset`] is set. Public so a caller can wait for a
+/// context to be ready for a press: `true` until the binding has been read once.
 #[derive(Component, Deref, DerefMut, Default)]
-pub(crate) struct FirstActivation(bool);
+pub struct FirstActivation(bool);
 
 #[cfg(test)]
 mod tests {
